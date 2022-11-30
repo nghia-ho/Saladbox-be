@@ -25,4 +25,21 @@ userController.register = catchAsync(async (req, res, next) => {
   sendResponse(res, 200, true, { user, accessToken }, null, "success");
 });
 
+userController.getUsers = catchAsync(async (req, res, next) => {
+  // Response
+  const userId = req.userId;
+  const user = await User.findById(userId);
+  if (!user) throw new AppError(404, "User Not Found", "Get User Error");
+
+  sendResponse(res, 200, true, user, null, "success");
+});
+userController.getCurrentUser = catchAsync(async (req, res, next) => {
+  //Validate user
+  const userId = req.userId;
+  const user = await User.findById(userId);
+  if (!user) throw new AppError(404, "User Not Found", "Get User Error");
+  // Response
+  sendResponse(res, 200, true, user, null, "success");
+});
+
 module.exports = userController;

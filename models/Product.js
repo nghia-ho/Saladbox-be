@@ -9,6 +9,10 @@ const productSchema = Schema(
       type: [Schema.Types.ObjectId],
       ref: "Ingredient",
     },
+    category: {
+      type: Schema.Types.ObjectId,
+      ref: "Category",
+    },
 
     image: [{ type: String, default: "" }],
     price: { type: Number, required: true },

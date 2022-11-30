@@ -27,4 +27,12 @@ router.use("/category", categoryApi);
 const orderApi = require("./order.api");
 router.use("/order", orderApi);
 
+// favoriteAPi
+const favoriteApi = require("./favorite.api");
+router.use("/favorite", favoriteApi);
+
+router.get("/config/paypal", (req, res) => {
+  res.send(process.env.PAYPAL_CLIENT);
+});
+
 module.exports = router;

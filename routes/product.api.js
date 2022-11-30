@@ -1,13 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const productController = require("../controllers/product.controller");
-
 const validators = require("../middlewares/validators");
-
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const multer = require("multer");
 const { param, body } = require("express-validator");
 const favoriteController = require("../controllers/favorite.controller");
+const authentication = require("../middlewares/authentication");
 
 const cloudinary = require("cloudinary").v2;
 cloudinary.config({
@@ -79,26 +78,5 @@ router.delete(
   ]),
   productController.deletedProduct
 );
-/**
- * @route POST /products/favorite
- * @description Add product to favorite list
- * @body
- * @access Login required
- */
-router.post("/favorite", favoriteController.markAsFavorite);
-
-/**
- * @route GET /products/favorite
- * @description Get all favorite list
- * @access Login required
- */
-router.get("/favorite", favoriteController.getFavoriteList);
-
-/**
- * @route DELETE /products/favorite/:id
- * @description Remove a product from favorite list
- * @access Login required
- */
-router.delete("/favorite", favoriteController.deleteFavoriteItem);
 
 module.exports = router;

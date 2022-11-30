@@ -4,17 +4,49 @@ const Schema = mongoose.Schema;
 const orderSchema = Schema(
   {
     user: { type: Schema.Types.ObjectId, required: true, ref: "User" },
-    address: { type: String, default: "" },
-    product: { type: Schema.Types.ObjectId, required: true, ref: "Product" },
-    totalPrice: { type: Number, required: true },
-    shippingFee: { type: Number, default: 15000 },
-    phone: { type: Number, default: "" },
-    orderDate: { type: Date, default: "" },
-    status: {
-      type: String,
-      enum: ["pending", "handling order", "success", "reject"],
-      default: "pending",
+    orderItems: [
+      {
+        price: { type: Number, required: true },
+        qty: { type: Number, required: true },
+        name: { type: String, required: true },
+        image: { type: String, required: true },
+        product_id: {
+          type: Schema.Types.ObjectId,
+          required: true,
+          ref: "Product",
+        },
+      },
+    ],
+    shippingAddress: {
+      address: { type: String, required: true },
+      district: { type: String, required: true },
+      city: { type: String, required: true },
+      phone: { type: Number, required: true },
     },
+    paymentMethod: {
+      type: String,
+      enum: ["cod", "paypal"],
+    },
+    paymentResult: {
+      id: { type: String },
+      status: { type: String },
+      update_time: { type: String },
+      email_address: { type: String },
+    },
+    shippingPrice: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    totalPrice: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    isPaid: { type: Boolean, required: true, default: false },
+    paidAt: { type: Date },
+    isDeliverd: { type: Boolean, required: true, default: false },
+    deliverdAt: { type: Date },
     isDeleted: { type: Boolean, default: false, select: false },
   },
   { timestamp: true }
