@@ -22,10 +22,10 @@ productController.getAllProduct = catchAsync(async (req, res, next) => {
     });
   }
 
-  if (filterQuery.price === "lowest") sort.push(["price", 1]);
-  if (filterQuery.price === "highest") sort.push(["price", -1]);
-  if (filterQuery.calo === "lowest") sort.push(["calo", 1]);
-  if (filterQuery.calo === "highest") sort.push(["calo", -1]);
+  if (filterQuery.sortBy === "price-lowest") sort.push(["price", 1]);
+  if (filterQuery.sortBy === "price-highest") sort.push(["price", -1]);
+  if (filterQuery.sortBy === "calo-lowest") sort.push(["calo", 1]);
+  if (filterQuery.sortBy === "calo-highest") sort.push(["calo", -1]);
 
   const filterCriteria = filterConditions.length
     ? { $and: filterConditions }
