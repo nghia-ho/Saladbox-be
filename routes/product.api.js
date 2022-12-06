@@ -53,6 +53,26 @@ router.post(
   upload.array("picture", 12),
   productController.createNewProduct
 );
+
+/**
+ * @route POST /products
+ * @description Create custom product
+ * @body name, decription, image
+ * @access  Login required
+ */
+router.post(
+  "/custom",
+  authentication.loginRequired,
+  validators.validate([
+    body("name").exists().notEmpty(),
+    body("ingredients").exists().notEmpty(),
+    body("price").exists().notEmpty(),
+    body("calo").exists().notEmpty(),
+    body("type").exists().notEmpty(),
+  ]),
+  productController.customProduct
+);
+
 /**
  * @route PUT /products/:id
  * @description Edit infomation of product

@@ -13,7 +13,7 @@ mongoose.connect(mongoURI, () => {
   console.log("Connected to Database!");
 });
 
-const productName = [
+const saladName = [
   "Potato And Egg Salad",
   "Chicken Shawarma Salad",
   "Crispy Noodle Salad",
@@ -116,8 +116,9 @@ const ingredient = async () => {
   return newIn;
 };
 
-const product = async () => {
-  for (let i = 0; i < productName.length; i++) {
+const productSalad = async () => {
+  const category = "637464ef3c08c345541890f2";
+  for (let i = 0; i < saladName.length; i++) {
     let step1 = await Ingredient.find({ step: 1 });
     let step2_1 = await Ingredient.find({ step: 2, type: "Fruit" });
     let step2_2 = await Ingredient.find({ step: 2, type: "Cheeze" });
@@ -146,15 +147,72 @@ const product = async () => {
     });
 
     const item = {
-      name: productName[i],
-      decription: `${productName[i] + faker.lorem.paragraph()}`,
+      name: saladName[i],
+      decription: `${saladName[i] + faker.lorem.paragraph()}`,
       ingredients: id,
       image: `/salads/${i + 1}.png`,
+      category,
       price: price,
       calo: calo,
     };
     await Product.create(item);
   }
 };
-//  ingredient();
-product();
+
+const productSmoothies = async () => {
+  const category = "6374652c3c08c345541890f8";
+  let newIn = await csv().fromFile("calories.csv");
+  newIn = newIn.map((e, i = 1) => {
+    e.Cals_per100grams = Number(e.Cals_per100grams.slice(0, -4));
+
+    if (e.FoodCategory === "Smoothies") {
+      return {
+        name: e.FoodItem,
+        decription: `${e.FoodItem + faker.lorem.paragraph()}`,
+        image: `/smoothies/${i}.png`,
+        category,
+        price: Number(faker.mersenne.rand(2, 50) + "000"),
+        calo: e.Cals_per100grams,
+      };
+    }
+  });
+  newIn = newIn
+    .filter((e) => e)
+    .map(async (e) => {
+      await Product.create(e);
+    });
+
+  Promise.all(newIn);
+  return newIn;
+};
+const productJuice = async () => {
+  const category = "637464f63c08c345541890f5";
+  let newIn = await csv().fromFile("calories.csv");
+  newIn = newIn.map((e, i = 1) => {
+    e.Cals_per100grams = Number(e.Cals_per100grams.slice(0, -4));
+
+    if (e.FoodCategory === "(Fruit)Juices") {
+      return {
+        name: e.FoodItem,
+        decription: `${e.FoodItem + faker.lorem.paragraph()}`,
+        image: `/juice/${i}.png`,
+        category,
+        price: Number(faker.mersenne.rand(2, 50) + "000"),
+        calo: e.Cals_per100grams,
+      };
+    }
+  });
+  newIn = newIn
+    .filter((e) => e)
+    .map(async (e) => {
+      await Product.create(e);
+    });
+
+  Promise.all(newIn);
+  return newIn;
+};
+
+// ingredient();
+productSalad();
+// productSmoothies();
+// productJuice();

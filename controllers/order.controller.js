@@ -4,7 +4,7 @@ const User = require("../models/User");
 
 const orderController = {};
 
-orderController.createOrderrrrrrr = catchAsync(async (req, res, next) => {
+orderController.createOrder = catchAsync(async (req, res, next) => {
   // Get data
   const {
     orderItems,
@@ -71,6 +71,20 @@ orderController.paidOrder = catchAsync(async (req, res, next) => {
 
   // Send data
   sendResponse(res, 200, true, order, null, "Get paid successful");
+});
+
+orderController.getOrders = catchAsync(async (req, res, next) => {
+  // Get data
+  const currentUserID = req.userId;
+
+  let order = await Order.find({ user: currentUserID }).sort([
+    ["createdAt", 1],
+  ]);
+
+  if (!order) sendResponse(res, 200, true, null, null, "Your Orders is Empty");
+
+  // Send data
+  sendResponse(res, 200, true, order, null, "Get orders successful");
 });
 
 module.exports = orderController;

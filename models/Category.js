@@ -6,7 +6,7 @@ const categorySchema = Schema(
     name: { type: String, required: true },
     product: { type: Schema.Types.ObjectId, required: true, ref: "Product" },
   },
-  { timestamp: true }
+  { timestamps: true }
 );
 
 const Category = mongoose.model("Category", categorySchema);

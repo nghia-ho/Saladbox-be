@@ -9,17 +9,20 @@ const router = express.Router();
  * @body {productName,userName,amount0.}
  * @access Login required
  */
-router.post(
-  "/",
-  authentication.loginRequired,
-  orderController.createOrderrrrrrr
-);
+router.post("/", authentication.loginRequired, orderController.createOrder);
 
 /**
  * @route GET /order?page=1&limit=10
  * @description Get orders with pagination
  * @access Admin Login required
  */
+
+/**
+ * @route GET /order?page=1&limit=10
+ * @description Get user's orders with pagination
+ * @access Login required
+ */
+router.get("/", authentication.loginRequired, orderController.getOrders);
 
 /**
  * @route GET /order/:id

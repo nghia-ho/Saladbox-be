@@ -6,7 +6,8 @@ const favoriteController = {};
 
 favoriteController.markAsFavorite = catchAsync(async (req, res, next) => {
   // Get data
-  const { productId } = req.body;
+  const { productId, type } = req.body;
+  console.log(type);
   const currentUserID = req.userId;
 
   //Logic
@@ -31,6 +32,7 @@ favoriteController.markAsFavorite = catchAsync(async (req, res, next) => {
   await Favorite.create({
     user: currentUserID,
     product: product,
+    type,
   });
   const favorite = await Favorite.find({}).populate("product");
   // Send data

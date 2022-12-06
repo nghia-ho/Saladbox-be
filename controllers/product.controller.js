@@ -14,18 +14,28 @@ productController.getAllProduct = catchAsync(async (req, res, next) => {
 
   // Process
   const filterConditions = [{ isDeleted: false }, { type: "avaiable" }];
-  const sort = [["createdAt", -1]];
+  let sort = { createdAt: -1 };
 
   if (filterQuery.name) {
     filterConditions.push({
       name: { $regex: filterQuery.name, $options: "i" },
     });
   }
+  const price = JSON.parse(filterQuery.price);
 
-  if (filterQuery.sortBy === "price-lowest") sort.push(["price", 1]);
-  if (filterQuery.sortBy === "price-highest") sort.push(["price", -1]);
-  if (filterQuery.sortBy === "calo-lowest") sort.push(["calo", 1]);
-  if (filterQuery.sortBy === "calo-highest") sort.push(["calo", -1]);
+  if (price) {
+    filterConditions.push({
+      price: {
+        $gte: JSON.parse(filterQuery.price)[0],
+        $lte: JSON.parse(filterQuery.price)[1],
+      },
+    });
+  }
+
+  if (filterQuery.sortBy === "price-lowest") sort = { price: 1 };
+  if (filterQuery.sortBy === "price-highest") sort = { price: -1 };
+  if (filterQuery.sortBy === "calo-lowest") sort = { calo: 1 };
+  if (filterQuery.sortBy === "calo-highest") sort = { calo: -1 };
 
   const filterCriteria = filterConditions.length
     ? { $and: filterConditions }
@@ -60,10 +70,16 @@ productController.getSingleProduct = catchAsync(async (req, res, next) => {
   if (!product) throw new AppError(404, "Product Not Found", "Not Found");
 
   // Process
-  product = await product.populate({
-    path: "ingredients",
-    select: "name _id calo image",
-  });
+  product = await product.populate([
+    {
+      path: "ingredients",
+      select: "name _id calo image",
+    },
+    {
+      path: "category",
+      select: "name",
+    },
+  ]);
 
   // Send response
   sendResponse(res, 200, true, product, null, "Get Product Success");
@@ -118,6 +134,39 @@ productController.createNewProduct = catchAsync(async (req, res, next) => {
   await product.populate("ingredients");
 
   sendResponse(res, 200, true, product, null, "Create Product Success");
+});
+productController.customProduct = catchAsync(async (req, res, next) => {
+  // Get data from body and files request
+  let { name, ingredients, price, calo, type } = req.body;
+
+  // Validate
+  // console.log(name);
+  // console.log(ingredients);
+  // console.log(price);
+  // console.log(calo);
+  // console.log(type);
+
+  const ingredient = await Promise.all(
+    ingredients.map(async (i) => {
+      const isValidObject = mongoose.isValidObjectId(i);
+      if (!isValidObject) throw new AppError(404, "Invalid ID", "Not Found");
+
+      const ingredient = await Ingredient.findOne({ _id: i });
+      if (!ingredient)
+        throw new AppError(404, "Ingredient Not Found", "Not Found");
+
+      return ingredient;
+    })
+  );
+  // console.log(ingredient);
+
+  // Process
+
+  let product = await Product.create({ name, ingredients, price, calo, type });
+
+  await product.populate("ingredients");
+
+  sendResponse(res, 200, true, product, null, "Custom Product Success");
 });
 productController.editProduct = catchAsync(async (req, res, next) => {
   // Get data

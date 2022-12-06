@@ -19,7 +19,7 @@ const userSchema = Schema(
     bmi: { type: Number, default: "" },
     isDeleted: { type: Boolean, default: false, select: false },
   },
-  { timestamp: true }
+  { timestamps: true }
 );
 
 // Not show the password, isDeleted when send res to client, but monggodb saved

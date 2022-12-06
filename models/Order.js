@@ -30,7 +30,7 @@ const orderSchema = Schema(
     paymentResult: {
       id: { type: String },
       status: { type: String },
-      update_time: { type: String },
+      update_time: { type: Date },
       email_address: { type: String },
     },
     shippingPrice: {
@@ -49,7 +49,7 @@ const orderSchema = Schema(
     deliverdAt: { type: Date },
     isDeleted: { type: Boolean, default: false, select: false },
   },
-  { timestamp: true }
+  { timestamps: true }
 );
 
 const Order = mongoose.model("Order", orderSchema);
