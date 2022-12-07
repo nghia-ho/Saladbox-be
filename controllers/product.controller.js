@@ -21,6 +21,9 @@ productController.getAllProduct = catchAsync(async (req, res, next) => {
       name: { $regex: filterQuery.name, $options: "i" },
     });
   }
+  if (filterQuery.category) {
+    filterConditions.push({ category: filterQuery.category });
+  }
   const price = JSON.parse(filterQuery.price);
 
   if (price) {

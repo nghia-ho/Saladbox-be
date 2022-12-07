@@ -24,14 +24,6 @@ router.post(
 router.get("/", categoryController.getCategory);
 
 /**
- * @route GET /category/:id
- * @description Get a single category
- * @access public
- */
-
-router.get("/:id", categoryController.getSingleCategory);
-
-/**
  * @route PUT /category/:id
  * @description Update category
  * @body

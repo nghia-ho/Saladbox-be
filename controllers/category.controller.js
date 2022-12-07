@@ -26,20 +26,6 @@ categoryController.getCategory = catchAsync(async (req, res, next) => {
   sendResponse(res, 200, true, category, null, "Get Category success");
 });
 
-categoryController.getSingleCategory = catchAsync(async (req, res, next) => {
-  const { id } = req.params;
-
-  const product = await Product.find({ category: id });
-  const category = await Category.findById(id);
-  sendResponse(
-    res,
-    200,
-    true,
-    { category, product },
-    null,
-    "Get Category success"
-  );
-});
 categoryController.UpdateCategory = catchAsync(async (req, res, next) => {
   const { name } = req.body;
   const { id } = req.params;
