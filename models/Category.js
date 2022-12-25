@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const categorySchema = Schema(
   {
     name: { type: String, required: true },
-    product: { type: Schema.Types.ObjectId, required: true, ref: "Product" },
+    isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

@@ -4,6 +4,7 @@ const Product = require("../models/Product");
 
 const favoriteController = {};
 
+// Role User: Add to Favorite List
 favoriteController.markAsFavorite = catchAsync(async (req, res, next) => {
   // Get data
   const { productId, type } = req.body;
@@ -45,28 +46,42 @@ favoriteController.markAsFavorite = catchAsync(async (req, res, next) => {
     "Create favorite List successful"
   );
 });
+
+// Role User: Get Favorite List
 favoriteController.getFavoriteList = catchAsync(async (req, res, next) => {
+  let { limit, page } = req.query;
+  limit = parseInt(limit) || 5;
+  page = parseInt(page) || 1;
+
   // Get data
   const currentUserID = req.userId;
-  console.log(currentUserID);
 
   //Process
-  const favorite = await Favorite.find({ user: currentUserID }).populate(
-    "product"
-  );
+  let sort = { createdAt: 1 };
+  const count = await Favorite.countDocuments({ user: currentUserID });
+  const totalPage = Math.ceil(count / limit);
+  const offset = limit * (page - 1);
+  let favorite = await Favorite.find({ user: currentUserID })
+
+    .populate("product")
+    .sort(sort)
+    .skip(offset)
+    .limit(limit);
+
   if (!favorite.length)
-    sendResponse(res, 200, true, favorite, null, "Favorite is empty");
+    sendResponse(res, 200, true, [], null, "Favorite is empty");
   // Send Response
+
   sendResponse(
     res,
     200,
     true,
-    { favorite },
+    { favorite, totalPage, count },
     null,
     "Get favorite List successful"
   );
 });
-
+// Role User: Delete from Favorite List
 favoriteController.deleteFavoriteItem = catchAsync(async (req, res, next) => {
   // Get data
   const currentUserID = req.userId;

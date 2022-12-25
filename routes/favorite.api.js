@@ -35,6 +35,9 @@ router.get(
  */
 router.delete(
   "/:id",
+  validators.validate([
+    param("id").exists().isString().custom(validators.checkObjectId),
+  ]),
   authentication.loginRequired,
   favoriteController.deleteFavoriteItem
 );

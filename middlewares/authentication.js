@@ -11,7 +11,6 @@ authentication.loginRequired = (req, res, next) => {
 
     if (!tokenString)
       throw new AppError(401, "Login Required", "Authentication Error");
-    // console.log(tokenString);
 
     const token = tokenString.replace("Bearer ", "");
 
@@ -24,6 +23,35 @@ authentication.loginRequired = (req, res, next) => {
         }
       }
       req.userId = payload.id;
+      req.role = payload.role;
+    });
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+authentication.loginRequiredRoleAdmin = (req, res, next) => {
+  try {
+    const tokenString = req.headers.authorization;
+
+    if (!tokenString)
+      throw new AppError(401, "Login Required", "Authentication Error");
+
+    const token = tokenString.replace("Bearer ", "");
+
+    jwt.verify(token, JWT_SECRET_KEY, (err, payload) => {
+      if (err) {
+        if (err.name === "TokenExpiredError") {
+          throw new AppError(401, "Token Expired", "Authentication Error");
+        } else {
+          throw new AppError(401, "Token  is invalid", "Authentication Error");
+        }
+      }
+      console.log(payload.role);
+      if (payload.role !== "admin") {
+        throw new AppError(401, "Permission is denied", "Authentication Error");
+      }
+      req.role = payload.role;
     });
     next();
   } catch (error) {

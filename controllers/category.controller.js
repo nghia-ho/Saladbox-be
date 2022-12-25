@@ -4,8 +4,10 @@ const Product = require("../models/Product");
 
 const categoryController = {};
 
+// Role Admin: Create New Category
 categoryController.createNewCategory = catchAsync(async (req, res, next) => {
   const { name } = req.body;
+  console.log(name);
   const category = await Category.findOne({ name });
 
   if (category)
@@ -20,12 +22,14 @@ categoryController.createNewCategory = catchAsync(async (req, res, next) => {
   sendResponse(res, 200, true, newCategory, null, "Create Category Success");
 });
 
+// Role User: Get Category
 categoryController.getCategory = catchAsync(async (req, res, next) => {
   const category = await Category.find({});
 
   sendResponse(res, 200, true, category, null, "Get Category success");
 });
 
+// Role Admin: Update Category
 categoryController.UpdateCategory = catchAsync(async (req, res, next) => {
   const { name } = req.body;
   const { id } = req.params;
@@ -33,9 +37,10 @@ categoryController.UpdateCategory = catchAsync(async (req, res, next) => {
 
   sendResponse(res, 200, true, { category }, "Update Category success");
 });
+
+// Role Admin: Delete Category
 categoryController.deleteCategory = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  console.log(id);
 
   const categoryProduct = await Category.findByIdAndUpdate(
     id,

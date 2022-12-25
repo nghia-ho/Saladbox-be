@@ -1,5 +1,6 @@
-const express = require("express");
 require("dotenv").config();
+
+const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
@@ -19,10 +20,15 @@ app.use("/uploads", express.static("uploads"));
 const indexRouter = require("./routes/index");
 app.use("/api", indexRouter);
 
+app.use("/", function (req, res, next) {
+  res.status(200).send("Salad Box is coming");
+});
+
 const mongoose = require("mongoose");
 
 // DB connection
 const mongoURI = process.env.MONGODB_URI;
+mongoose.set("strictQuery", false);
 mongoose
   .connect(mongoURI)
   .then(() => console.log(`DB connected `))

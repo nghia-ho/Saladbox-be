@@ -9,7 +9,7 @@ const orderSchema = Schema(
         price: { type: Number, required: true },
         qty: { type: Number, required: true },
         name: { type: String, required: true },
-        image: { type: String, required: true },
+        image: { type: String },
         product_id: {
           type: Schema.Types.ObjectId,
           required: true,
@@ -43,11 +43,12 @@ const orderSchema = Schema(
       required: true,
       default: 0,
     },
+    custom: { type: Boolean, default: false },
     isPaid: { type: Boolean, required: true, default: false },
     paidAt: { type: Date },
     isDeliverd: { type: Boolean, required: true, default: false },
     deliverdAt: { type: Date },
-    isDeleted: { type: Boolean, default: false, select: false },
+    isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

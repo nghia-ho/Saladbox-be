@@ -2,9 +2,11 @@ const { catchAsync, sendResponse, AppError } = require("../helpers/utils");
 const Product = require("../models/Product");
 const Ingredient = require("../models/Ingredient");
 const { default: mongoose } = require("mongoose");
+const { faker } = require("@faker-js/faker");
 
 const productController = {};
 
+// Get All Product
 productController.getAllProduct = catchAsync(async (req, res, next) => {
   // Get Query
   let { limit, page, ...filterQuery } = req.query;
@@ -13,8 +15,8 @@ productController.getAllProduct = catchAsync(async (req, res, next) => {
   page = parseInt(page) || 1;
 
   // Process
-  const filterConditions = [{ isDeleted: false }, { type: "avaiable" }];
-  let sort = { createdAt: -1 };
+  const filterConditions = [{ type: "avaiable" }];
+  let sort = { updatedAt: -1 };
 
   if (filterQuery.name) {
     filterConditions.push({
@@ -24,9 +26,8 @@ productController.getAllProduct = catchAsync(async (req, res, next) => {
   if (filterQuery.category) {
     filterConditions.push({ category: filterQuery.category });
   }
-  const price = JSON.parse(filterQuery.price);
 
-  if (price) {
+  if (filterQuery.price) {
     filterConditions.push({
       price: {
         $gte: JSON.parse(filterQuery.price)[0],
@@ -40,6 +41,18 @@ productController.getAllProduct = catchAsync(async (req, res, next) => {
   if (filterQuery.sortBy === "calo-lowest") sort = { calo: 1 };
   if (filterQuery.sortBy === "calo-highest") sort = { calo: -1 };
 
+  if (filterQuery.sort) {
+    const sortBy = filterQuery.sort.orderBy;
+    const sortOrder = filterQuery.sort.order === "desc" ? 1 : -1;
+    if (sortBy === "name") sort = { name: sortOrder };
+    if (sortBy === "image") sort = { image: sortOrder };
+    if (sortBy === "category") sort = { category: sortOrder };
+    if (sortBy === "price") sort = { price: sortOrder };
+    if (sortBy === "calo") sort = { calo: sortOrder };
+    if (sortBy === "isDeleted") sort = { isDeleted: sortOrder };
+    if (sortBy === "sort") sort = { sort: sortOrder };
+  }
+
   const filterCriteria = filterConditions.length
     ? { $and: filterConditions }
     : {};
@@ -49,6 +62,8 @@ productController.getAllProduct = catchAsync(async (req, res, next) => {
   const offset = limit * (page - 1);
 
   let product = await Product.find(filterCriteria)
+    .populate("category")
+    .populate("ingredients")
     .sort(sort)
     .skip(offset)
     .limit(limit);
@@ -64,6 +79,7 @@ productController.getAllProduct = catchAsync(async (req, res, next) => {
   );
 });
 
+// Get Single Product
 productController.getSingleProduct = catchAsync(async (req, res, next) => {
   // Get data
   const { id } = req.params;
@@ -88,66 +104,68 @@ productController.getSingleProduct = catchAsync(async (req, res, next) => {
   sendResponse(res, 200, true, product, null, "Get Product Success");
 });
 
+// Role admin: Create New Product
 productController.createNewProduct = catchAsync(async (req, res, next) => {
   // Get data from body and files request
-  let { name, decription, arrayListIngredients } = req.body;
-  let image = req.files;
+  let { name, decription, ingredients, category, image, type } = req.body;
+
+  // let image = req.files;
 
   // Validate
+  // ingredients = JSON.parse(req.body.ingredients);
+  if (!ingredients?.length)
+    throw new AppError(
+      402,
+      "Ingredient Does Not Empty",
+      "Create Product Error"
+    );
 
-  name = JSON.parse(name);
-  decription = JSON.parse(decription);
-  arrayListIngredients = JSON.parse(req.body.arrayListIngredients);
-
-  const ingredients = await Promise.all(
-    arrayListIngredients.map(async (i) => {
+  const ingredientList = await Promise.all(
+    ingredients.map(async (i) => {
       const isValidObject = mongoose.isValidObjectId(i);
-      if (!isValidObject) throw new AppError(404, "Invalid ID", "Not Found");
+      if (!isValidObject)
+        throw new AppError(402, "Invalid IDDD", "Create Product Error");
 
       const ingredient = await Ingredient.findOne({ _id: i });
       if (!ingredient)
-        throw new AppError(404, "Ingredient Not Found", "Not Found");
+        throw new AppError(404, "Ingredient Not Found", "Create Product Error");
 
       return ingredient;
     })
   );
-  // console.log(ingredient);
 
   // Process
 
   let calo = 0;
   let price = 0;
 
-  ingredients.forEach((ingredient) => {
+  ingredientList.forEach((ingredient) => {
     calo += ingredient.calo;
     price += ingredient.price;
   });
-
-  image = image.map((e) => e.path);
 
   let product = await Product.create({
     name,
     decription,
     image,
-    ingredients: arrayListIngredients,
+    ingredients,
+    category,
+    type,
     price,
     calo,
   });
 
-  await product.populate("ingredients");
+  await product.populate([{ path: "ingredients" }, { path: "category" }]);
 
   sendResponse(res, 200, true, product, null, "Create Product Success");
 });
+
+//Role user: Can custom product by choosing ingredient
 productController.customProduct = catchAsync(async (req, res, next) => {
   // Get data from body and files request
-  let { name, ingredients, price, calo, type } = req.body;
+  let { name, ingredients, price, calo, type, image } = req.body;
 
   // Validate
-  // console.log(name);
-  // console.log(ingredients);
-  // console.log(price);
-  // console.log(calo);
-  // console.log(type);
 
   const ingredient = await Promise.all(
     ingredients.map(async (i) => {
@@ -161,16 +179,25 @@ productController.customProduct = catchAsync(async (req, res, next) => {
       return ingredient;
     })
   );
-  // console.log(ingredient);
-
+  const decription = `${name + faker.lorem.paragraph()}`;
   // Process
 
-  let product = await Product.create({ name, ingredients, price, calo, type });
+  let product = await Product.create({
+    name,
+    ingredients,
+    price,
+    calo,
+    image,
+    type,
+    decription,
+  });
 
   await product.populate("ingredients");
 
   sendResponse(res, 200, true, product, null, "Custom Product Success");
 });
+
+//Role admin: Can edit product
 productController.editProduct = catchAsync(async (req, res, next) => {
   // Get data
 
@@ -181,7 +208,17 @@ productController.editProduct = catchAsync(async (req, res, next) => {
   if (!product)
     throw new AppError(404, "Product Not Found", "Update Product Error");
   // Process
-  const allows = ["name", "decription", "image"];
+  console.log(req.body);
+  const allows = [
+    "name",
+    "decription",
+    "image",
+    "ingredients",
+    "category",
+    "price",
+    "calo",
+    "type",
+  ];
 
   allows.forEach((field) => {
     if (req.body[field] !== undefined) {
@@ -194,6 +231,7 @@ productController.editProduct = catchAsync(async (req, res, next) => {
   sendResponse(res, 200, true, product, null, "Update Product Success");
 });
 
+//Role admin: Can delete product
 productController.deletedProduct = catchAsync(async (req, res, next) => {
   // Get data
 

@@ -50,7 +50,14 @@ router.get(
  */
 router.post(
   "/",
-  upload.array("picture", 12),
+  validators.validate([
+    body("name").exists().notEmpty().isString(),
+    body("decription").exists().notEmpty().isString(),
+    // body("ingredients").exists().notEmpty().custom(validators.checkObjectId),
+    body("category").exists().notEmpty().custom(validators.checkObjectId),
+  ]),
+  // upload.array("picture", 12),
+  authentication.loginRequiredRoleAdmin,
   productController.createNewProduct
 );
 
@@ -70,6 +77,7 @@ router.post(
     body("calo").exists().notEmpty(),
     body("type").exists().notEmpty(),
   ]),
+  authentication.loginRequired,
   productController.customProduct
 );
 
@@ -84,6 +92,7 @@ router.put(
   validators.validate([
     param("id").exists().isString().custom(validators.checkObjectId),
   ]),
+  authentication.loginRequiredRoleAdmin,
   productController.editProduct
 );
 /**
@@ -96,6 +105,7 @@ router.delete(
   validators.validate([
     param("id").exists().isString().custom(validators.checkObjectId),
   ]),
+  authentication.loginRequiredRoleAdmin,
   productController.deletedProduct
 );
 

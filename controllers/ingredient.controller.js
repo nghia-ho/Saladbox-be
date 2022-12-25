@@ -5,11 +5,11 @@ const Product = require("../models/Product");
 
 const ingredientController = {};
 
+// Role Admin: Create Ingredient
 ingredientController.createIngredient = async (req, res, next) => {
   // Get data
   let { name, image, price, calo, type } = req.body;
   let step;
-  // Validate
 
   // Process
 
@@ -27,43 +27,69 @@ ingredientController.createIngredient = async (req, res, next) => {
     type,
   });
 
-  sendResponse(res, 200, true, ingredient, null, "Create Product Success");
+  sendResponse(res, 200, true, ingredient, null, "Create Ingredient Success");
 };
+
+// Role Admin & User: Get Ingredient
 ingredientController.getIngredient = async (req, res, next) => {
-  // get data
-  // let { limit, page, ...filterQuery } = req.query;
+  // Get Query
+  let { limit, page, ...filterQuery } = req.query;
 
-  // limit = limit || 10;
-  // page = page || 1;
+  limit = limit || 10;
+  page = page || 1;
 
-  // // check get
-  // const filterConditions = [{ isDeleted: false }];
+  // Process
+  let sort = { updatedAt: -1 };
 
-  // if (filterQuery.name) {
-  //   filterConditions.push({
-  //     name: { $regex: filterQuery.name, $options: "i" },
-  //   });
-  // }
+  const filterConditions = [{}];
 
-  // const filterCriteria = filterConditions.length
-  //   ? { $and: filterConditions }
-  //   : {};
+  if (filterQuery.sort) {
+    const sortBy = filterQuery.sort.orderBy;
+    const sortOrder = filterQuery.sort.order === "desc" ? 1 : -1;
+    if (sortBy === "name") sort = { name: sortOrder };
+    if (sortBy === "image") sort = { image: sortOrder };
+    if (sortBy === "step") sort = { step: sortOrder };
+    if (sortBy === "price") sort = { price: sortOrder };
+    if (sortBy === "calo") sort = { calo: sortOrder };
+    if (sortBy === "type") sort = { type: sortOrder };
+    if (sortBy === "isDeleted") sort = { isDeleted: sortOrder };
+  }
+  console.log(sort);
+  if (filterQuery.name) {
+    filterConditions.push({
+      name: { $regex: filterQuery.name, $options: "i" },
+    });
+  }
 
-  let ingredient = await Ingredient.find({});
-  // .sort({ createdAt: -1 })
-  // .limit(limit);
-  // process
+  const filterCriteria = filterConditions.length
+    ? { $and: filterConditions }
+    : {};
+
+  const count = await Product.countDocuments(filterCriteria);
+  const totalPage = Math.ceil(count / limit);
+  const offset = limit * (page - 1);
+
+  const getAll = await Ingredient.find({});
+  const type = [...new Set(getAll.map((i) => i.type))];
+
+  let ingredient = await Ingredient.find(filterCriteria)
+    .sort(sort)
+    .limit(limit)
+    .sort(sort)
+    .skip(offset);
   // Send Request
 
   return sendResponse(
     res,
     200,
     true,
-    { ingredient },
+    { ingredient, count, totalPage, type },
     null,
-    "Get Product Success"
+    "Get Inredient Success"
   );
 };
+
+// Role Admin: Update Ingredient
 ingredientController.updateIngredient = async (req, res, next) => {
   // Get data
 
@@ -72,7 +98,7 @@ ingredientController.updateIngredient = async (req, res, next) => {
   // Validate
   let ingredient = await Ingredient.findById(ingredientID);
   if (!ingredient)
-    throw new AppError(404, "Product Not Found", "Update Product Error");
+    throw new AppError(404, "Ingredient Not Found", "Update Ingredient Error");
   // Process
   const allows = ["name", "price", "calo", "image", "type"];
 
@@ -82,26 +108,36 @@ ingredientController.updateIngredient = async (req, res, next) => {
     }
   });
 
+  if (req.body.type) {
+    if (
+      req.body.type === "Vegetable" ||
+      "Fruit" ||
+      "NutsSeeds" ||
+      "Cheeze" ||
+      "Protein"
+    )
+      step = 2;
+    ingredient.step = 2;
+    if (req.body.type === "Vegetables Salad") ingredient.step = 1;
+    if (req.body.type === "sauce") ingredient.step = 3;
+  }
+
   await ingredient.save();
 
   if (req.body.calo) {
-    //tim product chua ingredientID
-    const x = await Product.find({ ingredients: ingredientID });
-
+    //Find product have ingredientID
+    const ingredient = await Product.find({ ingredients: ingredientID });
     await Promise.all(
-      // đi qua các product để tìm các ingredientID bên trong
-      x.map(async (e) => {
-        let alo = 0;
+      // Map through all product have ingredient to find IngredientID
+      ingredient.map(async (e) => {
+        let calorie = 0;
         await Promise.all(
-          // đi qua từng ingredientID để tìm ingredient đầy đủ
           e.ingredients.map(async (i) => {
-            const x = await Ingredient.findById(i);
-
-            alo += x.calo;
+            const ingredient = await Ingredient.findById(i);
+            calorie += ingredient.calo;
             // e.calo = alo;
-
             // update calo
-            await Product.findByIdAndUpdate(e._id, { calo: alo });
+            await Product.findByIdAndUpdate(e._id, { calo: calorie });
           })
         );
       })
@@ -109,22 +145,15 @@ ingredientController.updateIngredient = async (req, res, next) => {
   }
 
   if (req.body.price) {
-    //tim product chua ingredientID
-    const x = await Product.find({ ingredients: ingredientID });
+    const ingredient = await Product.find({ ingredients: ingredientID });
 
     await Promise.all(
-      // đi qua các product để tìm các ingredientID bên trong
-      x.map(async (e) => {
+      ingredient.map(async (e) => {
         let price = 0;
         await Promise.all(
-          // đi qua từng ingredientID để tìm ingredient đầy đủ
           e.ingredients.map(async (i) => {
-            const x = await Ingredient.findById(i);
-
-            price += x.price;
-            // e.price = alo;
-
-            // update calo
+            const ingre = await Ingredient.findById(i);
+            price += ingre.price;
             await Product.findByIdAndUpdate(e._id, { price });
           })
         );
@@ -135,12 +164,14 @@ ingredientController.updateIngredient = async (req, res, next) => {
   //send res
   sendResponse(res, 200, true, ingredient, null, "Update Product Success");
 };
+
+// Role Admin: Delete Ingredient
 ingredientController.deleteIngredient = async (req, res, next) => {
   // Get data
 
   const ingredientID = req.params.id;
 
-  // Validate
+  // Process
   let ingredient = await Ingredient.findByIdAndUpdate(
     ingredientID,
     {
@@ -150,7 +181,27 @@ ingredientController.deleteIngredient = async (req, res, next) => {
   );
   if (!ingredient)
     throw new AppError(404, "Product Not Found", "Delete Product Error");
-  // Process
+
+  const caloOfIngredient = ingredient.calo;
+  const priceOfIngredient = ingredient.price;
+
+  // modify calo & price
+  const ingredients = await Product.find({ ingredients: ingredientID });
+  await Promise.all(
+    ingredients.map(async (e) => {
+      let calo = 0;
+      let price = 0;
+      calo = e.calo - caloOfIngredient;
+      price = e.price - priceOfIngredient;
+      await Product.findByIdAndUpdate(e._id, { calo: calo, price: price });
+    })
+  );
+
+  // Delete ingredient in Product
+  await Product.updateMany(
+    { ingredients: ingredientID },
+    { $pull: { ingredients: ingredientID } }
+  );
 
   //send res
   sendResponse(res, 200, true, ingredient, null, "Delete Product Success");

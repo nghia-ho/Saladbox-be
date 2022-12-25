@@ -1,6 +1,9 @@
 const express = require("express");
 const ingredientController = require("../controllers/ingredient.controller");
 const router = express.Router();
+const validators = require("../middlewares/validators");
+const { param, body } = require("express-validator");
+const authentication = require("../middlewares/authentication");
 
 /**
  * @route POST /ingredient
@@ -8,7 +11,15 @@ const router = express.Router();
  * @body {name, image, price, calo, step, type}
  * @access Admin Login required
  */
-router.post("/", ingredientController.createIngredient);
+router.post(
+  "/",
+  body("name").exists().notEmpty().isString(),
+  body("price").exists().notEmpty(),
+  body("calo").exists().notEmpty(),
+  body("type").exists().notEmpty().isString(),
+  authentication.loginRequiredRoleAdmin,
+  ingredientController.createIngredient
+);
 
 // ----------------------------------------------------------
 /**
@@ -25,7 +36,14 @@ router.get("/", ingredientController.getIngredient);
  * @body {name, image, price, calo, step, type}
  * @access Admin Login required
  */
-router.put("/:id", ingredientController.updateIngredient);
+router.put(
+  "/:id",
+  validators.validate([
+    param("id").exists().isString().custom(validators.checkObjectId),
+  ]),
+  authentication.loginRequiredRoleAdmin,
+  ingredientController.updateIngredient
+);
 // ----------------------------------------------------------
 
 /**
@@ -34,6 +52,13 @@ router.put("/:id", ingredientController.updateIngredient);
  * @access Admin Login required
  */
 // ----------------------------------------------------------
-router.delete("/:id", ingredientController.deleteIngredient);
+router.delete(
+  "/:id",
+  validators.validate([
+    param("id").exists().isString().custom(validators.checkObjectId),
+  ]),
+  authentication.loginRequiredRoleAdmin,
+  ingredientController.deleteIngredient
+);
 
 module.exports = router;

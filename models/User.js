@@ -16,13 +16,12 @@ const userSchema = Schema(
     phone: { type: Number, default: "" },
     address: { type: String, default: "" },
     avatarURL: { type: String, default: "" },
-    bmi: { type: Number, default: "" },
     isDeleted: { type: Boolean, default: false, select: false },
+    aboutme: { type: String, default: "" },
   },
   { timestamps: true }
 );
 
-// Not show the password, isDeleted when send res to client, but monggodb saved
 userSchema.methods.toJSON = function () {
   const user = this._doc;
   delete user.password;
@@ -31,9 +30,13 @@ userSchema.methods.toJSON = function () {
 };
 
 userSchema.methods.generateToken = async function () {
-  const accessToken = await jwt.sign({ id: this._id }, JWT_SECRET_KEY, {
-    expiresIn: "1d",
-  });
+  const accessToken = await jwt.sign(
+    { id: this._id, role: this.role },
+    JWT_SECRET_KEY,
+    {
+      expiresIn: "1d",
+    }
+  );
 
   return accessToken;
 };

@@ -9,10 +9,15 @@ authController.loginWithEmail = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
   // Logic Validation
-  // lôi password từ user
-  const user = await User.findOne({ email }, "+password");
-  console.log(user);
+  const user = await User.findOne({ email }, ["+password", "+isDeleted"]);
+
   if (!user) throw new AppError(400, "Invalid Credentials", "Login Error");
+  if (user.isDeleted)
+    throw new AppError(
+      400,
+      "Your Account Is Disable, Please Contact Us",
+      "Login Error"
+    );
 
   // Process
   const isMatch = await bcrypt.compare(password, user.password);

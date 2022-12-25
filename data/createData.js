@@ -1,14 +1,14 @@
-const fs = require("fs");
-const csv = require("csvtojson");
 require("dotenv/config");
+
+const csv = require("csvtojson");
 const mongoose = require("mongoose");
 const { faker } = require("@faker-js/faker");
 
 const Ingredient = require("../models/Ingredient");
 const Product = require("../models/Product");
-const express = require("express");
 
 const mongoURI = process.env.MONGODB_URI;
+mongoose.set("strictQuery", false);
 mongoose.connect(mongoURI, () => {
   console.log("Connected to Database!");
 });
@@ -34,7 +34,6 @@ const ingredient = async () => {
   let newIn = await csv().fromFile("calories.csv");
   newIn = newIn.map((e, i = 1) => {
     e.Cals_per100grams = Number(e.Cals_per100grams.slice(0, -4));
-
     if (e.FoodCategory === "Vegetables Salad") {
       return {
         name: e.FoodItem,
@@ -93,7 +92,6 @@ const ingredient = async () => {
       };
     } else return "";
   });
-
   for (let i = 0; i < 10; i++) {
     const sauce = {
       name: `${faker.address.country()} sauce`,
@@ -105,19 +103,18 @@ const ingredient = async () => {
     };
     newIn.push(sauce);
   }
-
-  newIn = newIn
-    .filter((e) => e)
-    .map(async (e, i) => {
-      e.image = `/ingredients/${i + 1}.png`;
-      await Ingredient.create(e);
-    });
-  Promise.all(newIn);
+  newIn = newIn.filter((e) => e);
+  newIn = newIn.map((e, i) => {
+    e.image = `/ingredients/${i + 1}.png`;
+    return e;
+  });
   return newIn;
 };
 
 const productSalad = async () => {
   const category = "637464ef3c08c345541890f2";
+  let result = [];
+
   for (let i = 0; i < saladName.length; i++) {
     let step1 = await Ingredient.find({ step: 1 });
     let step2_1 = await Ingredient.find({ step: 2, type: "Fruit" });
@@ -140,7 +137,7 @@ const productSalad = async () => {
     let price = 0;
     let id = [];
 
-    step.map((e) => {
+    step.forEach((e) => {
       calo += e.calo;
       price += e.price + e?.price / 2;
       id.push(e._id);
@@ -155,8 +152,10 @@ const productSalad = async () => {
       price: price,
       calo: calo,
     };
-    await Product.create(item);
+    result.push(item);
   }
+
+  return result;
 };
 
 const productSmoothies = async () => {
@@ -176,13 +175,7 @@ const productSmoothies = async () => {
       };
     }
   });
-  newIn = newIn
-    .filter((e) => e)
-    .map(async (e) => {
-      await Product.create(e);
-    });
-
-  Promise.all(newIn);
+  newIn = newIn.filter((e) => e);
   return newIn;
 };
 const productJuice = async () => {
@@ -202,17 +195,24 @@ const productJuice = async () => {
       };
     }
   });
-  newIn = newIn
-    .filter((e) => e)
-    .map(async (e) => {
-      await Product.create(e);
-    });
-
-  Promise.all(newIn);
+  newIn = newIn.filter((e) => e);
   return newIn;
 };
 
-// ingredient();
-productSalad();
-// productSmoothies();
-// productJuice();
+(async () => {
+  try {
+    const dataInfredient = await ingredient();
+    Ingredient.insertMany(dataInfredient);
+
+    const dataProductSalad = await productSalad();
+    Product.insertMany(dataProductSalad);
+
+    const dataproductSmoothies = await productSmoothies();
+    Product.insertMany(dataproductSmoothies);
+
+    const dataproductJuice = await productJuice();
+    Product.insertMany(dataproductJuice);
+  } catch (error) {
+    console.log(error);
+  }
+})();

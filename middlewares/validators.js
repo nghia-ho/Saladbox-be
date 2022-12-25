@@ -4,13 +4,11 @@ const { default: mongoose } = require("mongoose");
 
 const validators = {};
 
-// using middlewares (req, res, next) => {}
 validators.validate = (validationArray) => async (req, res, next) => {
-  // await a promise to catch a error
   await Promise.all(validationArray.map((validation) => validation.run(req)));
 
   const errors = validationResult(req);
-  // if not error
+
   if (errors.isEmpty()) return next();
 
   const message = errors

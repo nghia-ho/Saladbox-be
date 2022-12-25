@@ -14,7 +14,7 @@ const productSchema = Schema(
       ref: "Category",
     },
 
-    image: [{ type: String, default: "" }],
+    image: { type: String, default: "" },
     price: { type: Number, required: true },
     calo: { type: Number, required: true },
     type: {
@@ -22,7 +22,7 @@ const productSchema = Schema(
       enum: ["custom", "avaiable"],
       default: "avaiable",
     },
-    isDeleted: { type: Boolean, default: false, select: false },
+    isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
