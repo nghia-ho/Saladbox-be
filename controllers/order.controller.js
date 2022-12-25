@@ -517,14 +517,7 @@ orderController.deleteOrder = catchAsync(async (req, res, next) => {
       { new: true }
     );
     //send response
-    sendResponse(
-      res,
-      200,
-      true,
-      { order, type: "order" },
-      null,
-      "Delete Order Success"
-    );
+    sendResponse(res, 200, true, { order }, null, "Delete Order Success");
   } else if (speacial && !order) {
     speacial = await SpeacialOrder.findByIdAndUpdate(
       orderId,
@@ -538,7 +531,7 @@ orderController.deleteOrder = catchAsync(async (req, res, next) => {
       res,
       200,
       true,
-      { speacial, type: "speacialOrder" },
+      { order: speacial },
       null,
       "Delete Order Success"
     );
