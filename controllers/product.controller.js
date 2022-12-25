@@ -225,11 +225,12 @@ productController.editProduct = catchAsync(async (req, res, next) => {
     }
   });
 
+  await product.save();
+
   product = await Product.findById(productID).populate([
     { path: "ingredients" },
     { path: "category" },
   ]);
-  await product.save();
   //send res
   sendResponse(res, 200, true, product, null, "Update Product Success");
 });
