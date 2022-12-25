@@ -208,7 +208,6 @@ productController.editProduct = catchAsync(async (req, res, next) => {
   if (!product)
     throw new AppError(404, "Product Not Found", "Update Product Error");
   // Process
-  console.log(req.body);
   const allows = [
     "name",
     "decription",
@@ -226,6 +225,10 @@ productController.editProduct = catchAsync(async (req, res, next) => {
     }
   });
 
+  product = await Product.findById(productID).populate([
+    { path: "ingredients" },
+    { path: "category" },
+  ]);
   await product.save();
   //send res
   sendResponse(res, 200, true, product, null, "Update Product Success");
