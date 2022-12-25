@@ -248,7 +248,7 @@ productController.deletedProduct = catchAsync(async (req, res, next) => {
       isDeleted: true,
     },
     { new: true }
-  );
+  ).populate([{ path: "ingredients" }, { path: "category" }]);
   if (!product)
     throw new AppError(404, "Product Not Found", "Delete Product Error");
   // Process
