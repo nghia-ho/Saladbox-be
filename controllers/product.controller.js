@@ -267,6 +267,16 @@ productController.editProduct = catchAsync(async (req, res, next) => {
   const productID = req.params.id;
 
   // Validate
+
+  const productName = await Product.findOne({ name: req.body.name });
+
+  if (productName)
+    throw new AppError(
+      400,
+      "The Product already exists",
+      "Create Product Error"
+    );
+
   let product = await Product.findById(productID);
   if (!product)
     throw new AppError(404, "Product Not Found", "Update Product Error");

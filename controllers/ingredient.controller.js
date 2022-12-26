@@ -104,9 +104,20 @@ ingredientController.updateIngredient = catchAsync(async (req, res, next) => {
   const ingredientID = req.params.id;
 
   // Validate
+
   let ingredient = await Ingredient.findById(ingredientID);
   if (!ingredient)
     throw new AppError(404, "Ingredient Not Found", "Update Ingredient Error");
+
+  const currentIngredient = await Ingredient.findOne({ name: req.body.name });
+
+  if (currentIngredient)
+    throw new AppError(
+      400,
+      "The Ingredient already exists",
+      "Create Ingredient Error"
+    );
+
   // Process
   const allows = ["name", "price", "calo", "image", "type"];
 
