@@ -3,9 +3,7 @@ const router = express.Router();
 const productController = require("../controllers/product.controller");
 const validators = require("../middlewares/validators");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const multer = require("multer");
 const { param, body } = require("express-validator");
-const favoriteController = require("../controllers/favorite.controller");
 const authentication = require("../middlewares/authentication");
 
 const cloudinary = require("cloudinary").v2;
@@ -22,14 +20,25 @@ const storage = new CloudinaryStorage({
   },
 });
 
-const upload = multer({ storage: storage });
-
 /**
  * @route GET /products
  * @description Get all product with pagination
  * @access Public
  */
 router.get("/", productController.getAllProduct);
+
+/**
+ * @route GET /products/admin
+ * @description Get all product with pagination
+ * @access Public
+ */
+
+router.get(
+  "/admin",
+  authentication.loginRequiredRoleAdmin,
+  productController.getAllProductByAdmin
+);
+
 /**
  * @route GET /products/:id
  * @description Get single product
@@ -53,10 +62,8 @@ router.post(
   validators.validate([
     body("name").exists().notEmpty().isString(),
     body("decription").exists().notEmpty().isString(),
-    // body("ingredients").exists().notEmpty().custom(validators.checkObjectId),
     body("category").exists().notEmpty().custom(validators.checkObjectId),
   ]),
-  // upload.array("picture", 12),
   authentication.loginRequiredRoleAdmin,
   productController.createNewProduct
 );

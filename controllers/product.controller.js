@@ -15,7 +15,7 @@ productController.getAllProduct = catchAsync(async (req, res, next) => {
   page = parseInt(page) || 1;
 
   // Process
-  const filterConditions = [{ type: "avaiable" }];
+  const filterConditions = [{ type: "avaiable", isDeleted: false }];
   let sort = { updatedAt: -1 };
 
   if (filterQuery.name) {
@@ -40,6 +40,61 @@ productController.getAllProduct = catchAsync(async (req, res, next) => {
   if (filterQuery.sortBy === "price-highest") sort = { price: -1 };
   if (filterQuery.sortBy === "calo-lowest") sort = { calo: 1 };
   if (filterQuery.sortBy === "calo-highest") sort = { calo: -1 };
+
+  if (filterQuery.sort) {
+    const sortBy = filterQuery.sort.orderBy;
+    const sortOrder = filterQuery.sort.order === "desc" ? 1 : -1;
+    if (sortBy === "name") sort = { name: sortOrder };
+    if (sortBy === "image") sort = { image: sortOrder };
+    if (sortBy === "category") sort = { category: sortOrder };
+    if (sortBy === "price") sort = { price: sortOrder };
+    if (sortBy === "calo") sort = { calo: sortOrder };
+    if (sortBy === "isDeleted") sort = { isDeleted: sortOrder };
+    if (sortBy === "sort") sort = { sort: sortOrder };
+  }
+
+  const filterCriteria = filterConditions.length
+    ? { $and: filterConditions }
+    : {};
+
+  const count = await Product.countDocuments(filterCriteria);
+  const totalPage = Math.ceil(count / limit);
+  const offset = limit * (page - 1);
+
+  let product = await Product.find(filterCriteria)
+    .populate("category")
+    .populate("ingredients")
+    .sort(sort)
+    .skip(offset)
+    .limit(limit);
+
+  // Send Response
+  return sendResponse(
+    res,
+    200,
+    true,
+    { product, count, totalPage },
+    null,
+    "Get Product Success"
+  );
+});
+
+productController.getAllProductByAdmin = catchAsync(async (req, res, next) => {
+  // Get Query
+  let { limit, page, ...filterQuery } = req.query;
+
+  limit = parseInt(limit) || 10;
+  page = parseInt(page) || 1;
+
+  // Process
+  const filterConditions = [{ type: "avaiable" }];
+  let sort = { updatedAt: -1 };
+
+  if (filterQuery.name) {
+    filterConditions.push({
+      name: { $regex: filterQuery.name, $options: "i" },
+    });
+  }
 
   if (filterQuery.sort) {
     const sortBy = filterQuery.sort.orderBy;
@@ -124,7 +179,7 @@ productController.createNewProduct = catchAsync(async (req, res, next) => {
     ingredients.map(async (i) => {
       const isValidObject = mongoose.isValidObjectId(i);
       if (!isValidObject)
-        throw new AppError(402, "Invalid IDDD", "Create Product Error");
+        throw new AppError(402, "Invalid ID", "Create Product Error");
 
       const ingredient = await Ingredient.findOne({ _id: i });
       if (!ingredient)

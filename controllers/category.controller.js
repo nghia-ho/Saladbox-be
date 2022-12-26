@@ -7,13 +7,12 @@ const categoryController = {};
 // Role Admin: Create New Category
 categoryController.createNewCategory = catchAsync(async (req, res, next) => {
   const { name } = req.body;
-  console.log(name);
   const category = await Category.findOne({ name });
 
   if (category)
     throw new AppError(
       400,
-      "The Category already exists",
+
       "Create Category Error"
     );
 
@@ -42,10 +41,17 @@ categoryController.UpdateCategory = catchAsync(async (req, res, next) => {
 categoryController.deleteCategory = catchAsync(async (req, res, next) => {
   const { id } = req.params;
 
+  const isDeleted = await Category.findById(id);
+
   const categoryProduct = await Category.findByIdAndUpdate(
     id,
-    { isDeleted: true },
+    { isDeleted: !isDeleted.isDeleted },
     { new: true }
+  );
+
+  const product = await Product.updateMany(
+    { category: id },
+    { $set: { isDeleted: !isDeleted.isDeleted } }
   );
 
   sendResponse(res, 200, true, categoryProduct, null, "Get Category success");

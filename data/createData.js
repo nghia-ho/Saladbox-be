@@ -15,19 +15,25 @@ mongoose.connect(mongoURI, () => {
 
 const saladName = [
   "Potato And Egg Salad",
-  "Chicken Shawarma Salad",
+  "Shawarma Salad",
   "Crispy Noodle Salad",
-  "Mixed Salad With Lotus Root",
-  "Pomegranate And Kiwi Salad",
+  "Ensalada Murciana",
+  "Nam khao",
   "Prawn And Litchi Salad",
-  "Broccoli, Babycorn And Colourful Pasta Salad",
+  "Kosambari",
   "Fruit Cube Salad",
-  "Compressed Melon Sliders",
   "Tossed Salad",
   "Waldorf Salad",
-  "Chicken Piccata With Bread Salad",
-  "Watermelon, Olive And Feta Salad",
-  "Corn And Raw Mango Salad",
+  "Sałatka wiosenna",
+  "Crab Louie",
+  "Caesar Salad",
+  "Leafy Green Salad",
+  "Greek Salad",
+  "Fattoush",
+  "Cobb Salad",
+  "Wedge Salad",
+  "Insalata Caprese",
+  "Chicken Salad",
 ];
 
 const ingredient = async () => {
@@ -115,24 +121,32 @@ const productSalad = async () => {
   const category = "637464ef3c08c345541890f2";
   let result = [];
 
+  let step1 = await Ingredient.find({ step: 1 });
+  let step2_1 = await Ingredient.find({ step: 2, type: "Protein" });
+  let step2_2 = await Ingredient.find({ step: 2, type: "Cheeze" });
+  let step2_3 = await Ingredient.find({ step: 2, type: "NutsSeeds" });
+  let step2_4 = await Ingredient.find({ step: 2, type: "Fruit" });
+  let step2_5 = await Ingredient.find({ step: 2, type: "Vegetable" });
+  let step3 = await Ingredient.find({ step: 3 });
+
   for (let i = 0; i < saladName.length; i++) {
-    let step1 = await Ingredient.find({ step: 1 });
-    let step2_1 = await Ingredient.find({ step: 2, type: "Fruit" });
-    let step2_2 = await Ingredient.find({ step: 2, type: "Cheeze" });
-    let step2_3 = await Ingredient.find({ step: 2, type: "NutsSeeds" });
-    let step2_4 = await Ingredient.find({ step: 2, type: "Fruit" });
-    let step2_5 = await Ingredient.find({ step: 2, type: "Vegetable" });
-    let step3 = await Ingredient.find({ step: 3 });
+    const newstep1 = step1[Math.floor(Math.random() * step1.length)];
+    const newstep2_1 = step2_1[Math.floor(Math.random() * step2_1.length)];
+    const newstep2_2 = step2_2[Math.floor(Math.random() * step2_2.length)];
+    const newstep2_3 = step2_3[Math.floor(Math.random() * step2_3.length)];
+    const newstep2_4 = step2_4[Math.floor(Math.random() * step2_4.length)];
+    const newstep2_5 = step2_5[Math.floor(Math.random() * step2_5.length)];
+    const newstep3 = step3[Math.floor(Math.random() * step3.length)];
 
-    step1 = step1[Math.floor(Math.random() * step1.length)];
-    step2_1 = step2_1[Math.floor(Math.random() * step2_1.length)];
-    step2_2 = step2_2[Math.floor(Math.random() * step2_2.length)];
-    step2_3 = step2_3[Math.floor(Math.random() * step2_3.length)];
-    step2_4 = step2_4[Math.floor(Math.random() * step2_4.length)];
-    step2_5 = step2_5[Math.floor(Math.random() * step2_5.length)];
-    step3 = step3[Math.floor(Math.random() * step3.length)];
-
-    let step = [step1, step2_1, step2_2, step2_3, step2_4, step2_5, step3];
+    let step = [
+      newstep1,
+      newstep2_1,
+      newstep2_2,
+      newstep2_3,
+      newstep2_4,
+      newstep2_5,
+      newstep3,
+    ];
     let calo = 0;
     let price = 0;
     let id = [];
@@ -152,9 +166,10 @@ const productSalad = async () => {
       price: price,
       calo: calo,
     };
+    // console.log(item);
+
     result.push(item);
   }
-
   return result;
 };
 
@@ -175,13 +190,18 @@ const productSmoothies = async () => {
       };
     }
   });
-  newIn = newIn.filter((e) => e);
+  newIn = newIn
+    .filter((e) => e)
+    .map((e, i) => {
+      e.image = `/smoothies/${i + 1}.png`;
+      return e;
+    });
   return newIn;
 };
 const productJuice = async () => {
   const category = "637464f63c08c345541890f5";
   let newIn = await csv().fromFile("calories.csv");
-  newIn = newIn.map((e, i = 1) => {
+  newIn = newIn.map((e, i) => {
     e.Cals_per100grams = Number(e.Cals_per100grams.slice(0, -4));
 
     if (e.FoodCategory === "(Fruit)Juices") {
@@ -195,8 +215,14 @@ const productJuice = async () => {
       };
     }
   });
-  newIn = newIn.filter((e) => e);
-  return newIn;
+  newIn = newIn
+    .filter((e) => e)
+    .map((e, i) => {
+      e.image = `/juice/${i + 1}.png`;
+      return e;
+    });
+
+  return newIn.slice(0, 10);
 };
 
 (async () => {
