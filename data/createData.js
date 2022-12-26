@@ -121,13 +121,13 @@ const productSalad = async () => {
   const category = "637464ef3c08c345541890f2";
   let result = [];
 
-  let step1 = await Ingredient.find({ step: 1 });
-  let step2_1 = await Ingredient.find({ step: 2, type: "Protein" });
-  let step2_2 = await Ingredient.find({ step: 2, type: "Cheeze" });
-  let step2_3 = await Ingredient.find({ step: 2, type: "NutsSeeds" });
-  let step2_4 = await Ingredient.find({ step: 2, type: "Fruit" });
-  let step2_5 = await Ingredient.find({ step: 2, type: "Vegetable" });
-  let step3 = await Ingredient.find({ step: 3 });
+  const step1 = await Ingredient.find({ step: 1 });
+  const step2_1 = await Ingredient.find({ step: 2, type: "Protein" });
+  const step2_2 = await Ingredient.find({ step: 2, type: "Cheeze" });
+  const step2_3 = await Ingredient.find({ step: 2, type: "NutsSeeds" });
+  const step2_4 = await Ingredient.find({ step: 2, type: "Fruit" });
+  const step2_5 = await Ingredient.find({ step: 2, type: "Vegetable" });
+  const step3 = await Ingredient.find({ step: 3 });
 
   for (let i = 0; i < saladName.length; i++) {
     const newstep1 = step1[Math.floor(Math.random() * step1.length)];
@@ -166,7 +166,7 @@ const productSalad = async () => {
       price: price,
       calo: calo,
     };
-    // console.log(item);
+    console.log(i + "done");
 
     result.push(item);
   }
@@ -230,14 +230,14 @@ const productJuice = async () => {
     const dataInfredient = await ingredient();
     Ingredient.insertMany(dataInfredient);
 
-    const dataProductSalad = await productSalad();
-    Product.insertMany(dataProductSalad);
-
     const dataproductSmoothies = await productSmoothies();
     Product.insertMany(dataproductSmoothies);
 
     const dataproductJuice = await productJuice();
     Product.insertMany(dataproductJuice);
+
+    const dataProductSalad = await productSalad();
+    Product.insertMany(dataProductSalad);
   } catch (error) {
     console.log(error);
   }

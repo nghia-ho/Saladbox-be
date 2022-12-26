@@ -1,8 +1,7 @@
-const express = require("express");
 const { catchAsync, AppError, sendResponse } = require("../helpers/utils");
 const Order = require("../models/Order");
 const SpeacialOrder = require("../models/SpeacialOrder");
-const User = require("../models/User");
+// const User = require("../models/User");
 
 const orderController = {};
 
@@ -102,7 +101,7 @@ orderController.paidOrder = catchAsync(async (req, res, next) => {
       email_address: req.body.payer.email_address,
     };
     await order.save();
-    // Send data
+
     sendResponse(res, 200, true, order, null, "Get paid successful");
   } else if (speacial && !order) {
     speacial.isPaid = true;
@@ -114,7 +113,7 @@ orderController.paidOrder = catchAsync(async (req, res, next) => {
       email_address: req.body.payer.email_address,
     };
     await speacial.save();
-    // Send data
+
     sendResponse(res, 200, true, speacial, null, "Get paid successful");
   } else if (!speacial && !order) {
     throw new AppError(404, "Order Not Found", "Paid Order Error");
@@ -462,7 +461,7 @@ orderController.editOrderCustom = catchAsync(async (req, res, next) => {
 
   const orderId = req.params.id;
   const { isDeliverd, phone, district, address, day } = req.body;
-  console.log(day);
+  // console.log(day);
   // Validate
   let order = await SpeacialOrder.findById(orderId);
   if (!order) throw new AppError(404, "Order Not Found", "Update Order Error");
@@ -508,6 +507,7 @@ orderController.deleteOrder = catchAsync(async (req, res, next) => {
   let order = await Order.findById(orderId);
   let speacial = await SpeacialOrder.findById(orderId);
 
+  // if order is not a 7days order
   if (order && !speacial) {
     order = await Order.findByIdAndUpdate(
       orderId,
@@ -516,9 +516,10 @@ orderController.deleteOrder = catchAsync(async (req, res, next) => {
       },
       { new: true }
     );
-    //send response
     sendResponse(res, 200, true, { order }, null, "Delete Order Success");
-  } else if (speacial && !order) {
+  }
+  // if order is a 7days order
+  else if (speacial && !order) {
     speacial = await SpeacialOrder.findByIdAndUpdate(
       orderId,
       {
@@ -526,7 +527,6 @@ orderController.deleteOrder = catchAsync(async (req, res, next) => {
       },
       { new: true }
     );
-    //send response
     sendResponse(
       res,
       200,

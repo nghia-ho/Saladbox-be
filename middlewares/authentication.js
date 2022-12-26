@@ -47,7 +47,7 @@ authentication.loginRequiredRoleAdmin = (req, res, next) => {
           throw new AppError(401, "Token  is invalid", "Authentication Error");
         }
       }
-      console.log(payload.role);
+      // console.log(payload.role);
       if (payload.role !== "admin") {
         throw new AppError(401, "Permission is denied", "Authentication Error");
       }

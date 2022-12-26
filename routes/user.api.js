@@ -57,7 +57,7 @@ router.delete(
   userController.deactivateAccount
 );
 
-// ADMIN -----------------------------------------------------------------------
+// ADMIN
 /**
  * @route GET /users?page=10&limit=1
  * @description Get all users
@@ -69,20 +69,3 @@ router.get(
   authentication.loginRequiredRoleAdmin,
   userController.getUsers
 );
-
-/**
- * @route GET /users/:id
- * @description Get single user
- * @access Admin Login required
- */
-router.get(
-  "/:id",
-  validators.validate([
-    param("id").exists().isString().custom(validators.checkObjectId),
-  ]),
-  // authentication.loginRequired,
-  authentication.loginRequiredRoleAdmin,
-  userController.getSingleUser
-);
-
-module.exports = router;

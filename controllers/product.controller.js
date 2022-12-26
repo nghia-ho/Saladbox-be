@@ -161,7 +161,6 @@ productController.getSingleProduct = catchAsync(async (req, res, next) => {
 
 // Role admin: Create New Product
 productController.createNewProduct = catchAsync(async (req, res, next) => {
-  // Get data from body and files request
   let { name, decription, ingredients, category, image, type } = req.body;
 
   // let image = req.files;
@@ -212,6 +211,7 @@ productController.createNewProduct = catchAsync(async (req, res, next) => {
 
   await product.populate([{ path: "ingredients" }, { path: "category" }]);
 
+  // Send Response
   sendResponse(res, 200, true, product, null, "Create Product Success");
 });
 
@@ -306,7 +306,6 @@ productController.deletedProduct = catchAsync(async (req, res, next) => {
   ).populate([{ path: "ingredients" }, { path: "category" }]);
   if (!product)
     throw new AppError(404, "Product Not Found", "Delete Product Error");
-  // Process
 
   //send res
   sendResponse(res, 200, true, product, null, "Delete Product Success");

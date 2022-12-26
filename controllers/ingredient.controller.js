@@ -1,37 +1,11 @@
-const { body } = require("express-validator");
-const { sendResponse } = require("../helpers/utils");
+const { sendResponse, sendResponse, AppError } = require("../helpers/utils");
 const Ingredient = require("../models/Ingredient");
 const Product = require("../models/Product");
 
 const ingredientController = {};
 
-// Role Admin: Create Ingredient
-ingredientController.createIngredient = async (req, res, next) => {
-  // Get data
-  let { name, image, price, calo, type } = req.body;
-  let step;
-
-  // Process
-
-  if (type === "Vegetable" || "Fruit" || "NutsSeeds" || "Cheeze" || "Protein")
-    step = 2;
-  if (type === "Vegetables Salad") step = 1;
-  if (type === "sauce") step = 3;
-
-  let ingredient = await Ingredient.create({
-    name,
-    image,
-    price,
-    calo,
-    step,
-    type,
-  });
-
-  sendResponse(res, 200, true, ingredient, null, "Create Ingredient Success");
-};
-
 // Role Admin & User: Get Ingredient
-ingredientController.getIngredient = async (req, res, next) => {
+ingredientController.getIngredient = catchAsync(async (req, res, next) => {
   // Get Query
   let { limit, page, ...filterQuery } = req.query;
 
@@ -54,7 +28,6 @@ ingredientController.getIngredient = async (req, res, next) => {
     if (sortBy === "type") sort = { type: sortOrder };
     if (sortBy === "isDeleted") sort = { isDeleted: sortOrder };
   }
-  console.log(sort);
   if (filterQuery.name) {
     filterConditions.push({
       name: { $regex: filterQuery.name, $options: "i" },
@@ -87,10 +60,35 @@ ingredientController.getIngredient = async (req, res, next) => {
     null,
     "Get Inredient Success"
   );
-};
+});
+
+// Role Admin: Create Ingredient
+ingredientController.createIngredient = catchAsync(async (req, res, next) => {
+  // Get data
+  let { name, image, price, calo, type } = req.body;
+  let step;
+
+  // Process
+
+  if (type === "Vegetable" || "Fruit" || "NutsSeeds" || "Cheeze" || "Protein")
+    step = 2;
+  if (type === "Vegetables Salad") step = 1;
+  if (type === "sauce") step = 3;
+
+  let ingredient = await Ingredient.create({
+    name,
+    image,
+    price,
+    calo,
+    step,
+    type,
+  });
+
+  sendResponse(res, 200, true, ingredient, null, "Create Ingredient Success");
+});
 
 // Role Admin: Update Ingredient
-ingredientController.updateIngredient = async (req, res, next) => {
+ingredientController.updateIngredient = catchAsync(async (req, res, next) => {
   // Get data
 
   const ingredientID = req.params.id;
@@ -163,10 +161,10 @@ ingredientController.updateIngredient = async (req, res, next) => {
 
   //send res
   sendResponse(res, 200, true, ingredient, null, "Update Product Success");
-};
+});
 
 // Role Admin: Delete Ingredient
-ingredientController.deleteIngredient = async (req, res, next) => {
+ingredientController.deleteIngredient = catchAsync(async (req, res, next) => {
   // Get data
 
   const ingredientID = req.params.id;
@@ -205,6 +203,6 @@ ingredientController.deleteIngredient = async (req, res, next) => {
 
   //send res
   sendResponse(res, 200, true, ingredient, null, "Delete Product Success");
-};
+});
 
 module.exports = ingredientController;

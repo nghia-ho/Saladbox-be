@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 
 const userController = {};
 
-// Register
+// -------------Register
 userController.register = catchAsync(async (req, res, next) => {
   // Get data from request
   let { email, password, name } = req.body;
@@ -23,7 +23,8 @@ userController.register = catchAsync(async (req, res, next) => {
   // Response
   sendResponse(res, 200, true, { user, accessToken }, null, "Register Success");
 });
-// Get Account
+
+// -------------Get Account
 userController.getCurrentUser = catchAsync(async (req, res, next) => {
   //Validate user
   const userId = req.userId;
@@ -33,7 +34,7 @@ userController.getCurrentUser = catchAsync(async (req, res, next) => {
   sendResponse(res, 200, true, user, null, "Get User Success");
 });
 
-// Edit Account
+// -------------Edit Account
 userController.updateAccount = catchAsync(async (req, res, next) => {
   // Get data
   let { newPassword, passwordConfirmation } = req.body;
@@ -88,7 +89,7 @@ userController.updateAccount = catchAsync(async (req, res, next) => {
   sendResponse(res, 200, true, user, null, "Update User Successfull");
 });
 
-// Deactive Account
+// -------------Deactive Account
 userController.deactivateAccount = catchAsync(async (req, res, next) => {
   //getdata
   const currentUserId = req.userId;
@@ -103,7 +104,7 @@ userController.deactivateAccount = catchAsync(async (req, res, next) => {
   sendResponse(res, 200, true, user, null, "Deactivate Account Successfull");
 });
 
-// Admin can get all account
+// -------------Admin can get all account
 userController.getUsers = catchAsync(async (req, res, next) => {
   // Get Query
   let { limit, page, ...filterQuery } = req.query;
@@ -144,15 +145,3 @@ userController.getUsers = catchAsync(async (req, res, next) => {
     "Get user Success"
   );
 });
-
-//admin can get single account's user
-userController.getSingleUser = catchAsync(async (req, res, next) => {
-  // Response
-  // const userId = req.userId;
-  // const user = await User.findById(userId);
-  // if (!user) throw new AppError(404, "User Not Found", "Get User Error");
-
-  sendResponse(res, 200, "true", "user", null, "success");
-});
-
-module.exports = userController;
