@@ -111,7 +111,7 @@ ingredientController.updateIngredient = catchAsync(async (req, res, next) => {
 
   const currentIngredient = await Ingredient.findOne({ name: req.body.name });
 
-  if (currentIngredient)
+  if (currentIngredient && ingredient.name !== req.body.name)
     throw new AppError(
       400,
       "The Ingredient already exists",
