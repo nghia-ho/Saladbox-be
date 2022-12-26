@@ -2,6 +2,7 @@ const { catchAsync, sendResponse, AppError } = require("../helpers/utils");
 const Product = require("../models/Product");
 const Ingredient = require("../models/Ingredient");
 const { default: mongoose } = require("mongoose");
+const { faker } = require("@faker-js/faker");
 
 const productController = {};
 
