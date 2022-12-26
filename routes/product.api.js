@@ -83,6 +83,14 @@ router.put(
   "/:id",
   validators.validate([
     param("id").exists().isString().custom(validators.checkObjectId),
+    body("price", "The Field Price Must Be A Positive Number")
+      .isInt({ min: 0 })
+      .exists()
+      .notEmpty(),
+    body("calo", "The Field Calo Must Be A Positive Number")
+      .isInt({ min: 0 })
+      .exists()
+      .notEmpty(),
   ]),
   authentication.loginRequiredRoleAdmin,
   productController.editProduct
