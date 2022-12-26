@@ -2,23 +2,8 @@ const express = require("express");
 const router = express.Router();
 const productController = require("../controllers/product.controller");
 const validators = require("../middlewares/validators");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const { param, body } = require("express-validator");
 const authentication = require("../middlewares/authentication");
-
-const cloudinary = require("cloudinary").v2;
-cloudinary.config({
-  cloud_name: "dcui8saaz",
-  api_key: "276626599479948",
-  api_secret: "U0OHUelldUsVAPLW4NFtoEE9TfI",
-});
-
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: "products",
-  },
-});
 
 /**
  * @route GET /products

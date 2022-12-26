@@ -2,7 +2,6 @@ const { catchAsync, sendResponse, AppError } = require("../helpers/utils");
 const Product = require("../models/Product");
 const Ingredient = require("../models/Ingredient");
 const { default: mongoose } = require("mongoose");
-const { faker } = require("@faker-js/faker");
 
 const productController = {};
 
@@ -166,6 +165,15 @@ productController.createNewProduct = catchAsync(async (req, res, next) => {
   // let image = req.files;
 
   // Validate
+  const productName = await Product.findOne({ name });
+
+  if (productName)
+    throw new AppError(
+      400,
+      "The Product already exists",
+      "Create Product Error"
+    );
+
   // ingredients = JSON.parse(req.body.ingredients);
   if (!ingredients?.length)
     throw new AppError(

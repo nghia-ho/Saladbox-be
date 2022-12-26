@@ -8,6 +8,7 @@ const favoriteController = {};
 favoriteController.markAsFavorite = catchAsync(async (req, res, next) => {
   // Get data
   const { productId, type } = req.body;
+  // console.log(type);
   const currentUserID = req.userId;
 
   //Logic

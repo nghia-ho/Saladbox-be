@@ -12,7 +12,7 @@ categoryController.createNewCategory = catchAsync(async (req, res, next) => {
   if (category)
     throw new AppError(
       400,
-
+      "The Category already exists",
       "Create Category Error"
     );
 

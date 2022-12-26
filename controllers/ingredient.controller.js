@@ -1,8 +1,42 @@
-const { sendResponse, sendResponse, AppError } = require("../helpers/utils");
+const { sendResponse, AppError, catchAsync } = require("../helpers/utils");
 const Ingredient = require("../models/Ingredient");
 const Product = require("../models/Product");
 
 const ingredientController = {};
+
+// Role Admin: Create Ingredient
+ingredientController.createIngredient = catchAsync(async (req, res, next) => {
+  // Get data
+  let { name, image, price, calo, type } = req.body;
+  let step;
+
+  //validate
+  const currentIngredient = await Ingredient.findOne({ name });
+
+  if (currentIngredient)
+    throw new AppError(
+      400,
+      "The Ingredient already exists",
+      "Create Ingredient Error"
+    );
+  // Process
+
+  if (type === "Vegetable" || "Fruit" || "NutsSeeds" || "Cheeze" || "Protein")
+    step = 2;
+  if (type === "Vegetables Salad") step = 1;
+  if (type === "sauce") step = 3;
+
+  let ingredient = await Ingredient.create({
+    name,
+    image,
+    price,
+    calo,
+    step,
+    type,
+  });
+
+  sendResponse(res, 200, true, ingredient, null, "Create Ingredient Success");
+});
 
 // Role Admin & User: Get Ingredient
 ingredientController.getIngredient = catchAsync(async (req, res, next) => {
@@ -28,6 +62,7 @@ ingredientController.getIngredient = catchAsync(async (req, res, next) => {
     if (sortBy === "type") sort = { type: sortOrder };
     if (sortBy === "isDeleted") sort = { isDeleted: sortOrder };
   }
+  // console.log(sort);
   if (filterQuery.name) {
     filterConditions.push({
       name: { $regex: filterQuery.name, $options: "i" },
@@ -60,31 +95,6 @@ ingredientController.getIngredient = catchAsync(async (req, res, next) => {
     null,
     "Get Inredient Success"
   );
-});
-
-// Role Admin: Create Ingredient
-ingredientController.createIngredient = catchAsync(async (req, res, next) => {
-  // Get data
-  let { name, image, price, calo, type } = req.body;
-  let step;
-
-  // Process
-
-  if (type === "Vegetable" || "Fruit" || "NutsSeeds" || "Cheeze" || "Protein")
-    step = 2;
-  if (type === "Vegetables Salad") step = 1;
-  if (type === "sauce") step = 3;
-
-  let ingredient = await Ingredient.create({
-    name,
-    image,
-    price,
-    calo,
-    step,
-    type,
-  });
-
-  sendResponse(res, 200, true, ingredient, null, "Create Ingredient Success");
 });
 
 // Role Admin: Update Ingredient
