@@ -35,7 +35,8 @@ favoriteController.markAsFavorite = catchAsync(async (req, res, next) => {
     product: product,
     type,
   });
-  const favorite = await Favorite.find({}).populate("product");
+  const favorite = await Favorite.find({ user: currentUserID }).populate("product");
+
   // Send data
   sendResponse(
     res,
@@ -62,7 +63,6 @@ favoriteController.getFavoriteList = catchAsync(async (req, res, next) => {
   const totalPage = Math.ceil(count / limit);
   const offset = limit * (page - 1);
   let favorite = await Favorite.find({ user: currentUserID })
-
     .populate("product")
     .sort(sort)
     .skip(offset)
@@ -97,7 +97,7 @@ favoriteController.deleteFavoriteItem = catchAsync(async (req, res, next) => {
       "Product from favorite list not Found",
       "Delete Product from favorite list error"
     );
-  const favorite = await Favorite.find({}).populate("product");
+  const favorite = await Favorite.find({ user: currentUserID }).populate("product");
 
   // Send Response
   sendResponse(
